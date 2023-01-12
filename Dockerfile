@@ -6,5 +6,5 @@ COPY . .
 # lagt inn pakken manuelt. Vi mangler libc6-compat, som finnes i 17-jdk-focal som er ubunt-basert.
 FROM eclipse-temurin:18-jdk-focal
 
-COPY --from=buildToJar /home/gradle/app/build/libs/*.jar app.jar
+COPY --from=buildToJar /home/gradle/app/build/libs/app.jar app.jar
 CMD ["java", "-XX:+UseParallelGC", "-jar", "app.jar"]
