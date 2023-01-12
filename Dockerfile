@@ -13,7 +13,7 @@ FROM eclipse-temurin:19.0.1_10-jre-alpine
 ENV LANG='nb_NO.UTF-8' LANGUAGE='nb_NO:nb' LC_ALL='nb:NO.UTF-8' TZ="Europe/Oslo"
 RUN apk --update --no-cache add libstdc++
 COPY --from=app app.jar .
-CMD ["java", "-Xmx4G", "-Xms4G", "-XX:+UseParallelGC", "-jar", "app.jar"]
+CMD ["java", "-XX:ActiveProcessorCount=2", "-jar", "app.jar"]
 
 # use -XX:+UseParallelGC when 2 CPUs and 4G RAM.
 # use G1GC when using more than 4G RAM and/or more than 2 CPUs
