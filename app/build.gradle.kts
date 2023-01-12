@@ -3,6 +3,8 @@ val ktorVersion = "2.2.2"
 
 plugins {
     id("io.ktor.plugin")
+    id("com.github.johnrengelman.shadow")
+    application
 }
 
 application {
