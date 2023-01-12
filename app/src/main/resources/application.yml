@@ -1,0 +1,14 @@
+arena:
+  proxy-base-url: https://aap-fss-proxy.dev-fss-pub.nais.io
+  scope: "api://dev-fss.aap.fss-proxy/.default"
+azure:
+  tokenEndpoint: ${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}
+  clientId: ${AZURE_APP_CLIENT_ID}
+  clientSecret: ${AZURE_APP_CLIENT_SECRET}
+kafka:
+  application-id: ${KAFKA_STREAMS_APPLICATION_ID}
+  brokers: ${KAFKA_BROKERS}
+  ssl:
+    truststorePath: ${KAFKA_TRUSTSTORE_PATH}
+    keystorePath: ${KAFKA_KEYSTORE_PATH}
+    credstorePsw: ${KAFKA_CREDSTORE_PASSWORD}
