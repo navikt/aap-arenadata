@@ -34,9 +34,7 @@ class ArenaRestClient(
             bearerAuth(token)
             contentType(ContentType.Application.Json)
         }
-            .body<ArenaResponse>().also {
-                sikkerLogg.info("Svar fra Arena: $it")
-            }
+            .body()
     }
 
     private val httpClient = HttpClient(CIO) {
@@ -45,13 +43,8 @@ class ArenaRestClient(
         install(Logging) {
             level = LogLevel.BODY
             logger = object : Logger {
-                private var logBody = false
                 override fun log(message: String) {
-                    when {
-                        message == "BODY START" -> logBody = true
-                        message == "BODY END" -> logBody = false
-                        logBody -> sikkerLogg.debug("respons fra Inntektskomponenten: $message")
-                    }
+                    sikkerLogg.debug("respons fra Arena: $message")
                 }
             }
         }
