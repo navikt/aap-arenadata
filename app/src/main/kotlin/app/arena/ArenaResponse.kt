@@ -25,7 +25,7 @@ data class Ytelsesvedtak(
 )
 
 data class Periode(
-    val fom: String,
+    val fom: String?,
     val tom: String?,
 )
 
