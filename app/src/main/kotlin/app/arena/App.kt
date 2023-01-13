@@ -1,10 +1,14 @@
 package app.arena
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.http.*
+import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
@@ -69,6 +73,12 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
     val config = loadConfig<Config>()
 
     install(MicrometerMetrics) { registry = prometheus }
+    install(ContentNegotiation) {
+        jackson {
+            registerModule(JavaTimeModule())
+            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        }
+    }
 
     Thread.currentThread().setUncaughtExceptionHandler { _, e -> sikkerLogg.error("Uhåndtert feil", e) }
     environment.monitor.subscribe(ApplicationStopping) { kafka.close() }

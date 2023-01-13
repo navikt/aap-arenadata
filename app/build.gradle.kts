@@ -18,6 +18,7 @@ dependencies {
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
