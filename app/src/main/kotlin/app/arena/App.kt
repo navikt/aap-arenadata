@@ -131,18 +131,17 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
                 call.respond(status, "vedtak")
             }
         }
-        route("/kelvin") {
-            get("/vedtak") {
-                val personident = call.parameters.getOrFail("personident")
-                call.respond(statestore[personident])
-            }
-        }
-        route("/arena") {
             get("/vedtak") {
                 val personident = call.parameters.getOrFail("personident")
                 val arenarespons = arenaRestClient.hentSisteVedtak(personident)
-                call.respond(arenarespons ?: ArenaResponse(null, null))
+                val kelvinrespons = statestore[personident]
+                if(arenarespons != null){
+                    call.respond(Vedtaksdata(true, "arena"))
+                }
+                else if(kelvinrespons != null){
+                    call.respond(Vedtaksdata(true, "kelvin"))
+                }
+                else call.respond(Vedtaksdata(false, ""))
             }
-        }
     }
 }
