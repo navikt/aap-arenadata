@@ -8,7 +8,7 @@ plugins {
 }
 
 application {
-    mainClass.set("app.arena.AppKt")
+    mainClass.set("app.saksinfo.AppKt")
 }
 
 dependencies {
