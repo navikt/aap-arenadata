@@ -23,6 +23,7 @@ import no.nav.aap.ktor.config.loadConfig
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
+import org.apache.kafka.streams.kstream.Branched
 import org.slf4j.LoggerFactory
 
 data class Config(
@@ -50,22 +51,39 @@ object Topics {
 fun topology(arenaRestClient: ArenaRestClient): Topology {
     val builder = StreamsBuilder()
 
-    builder.consume(Topics.vedtak)
+    val vedtaksTable = builder.consume(Topics.vedtak)
         .produce(Tables.vedtak)
 
+    val skalJoineMedVedtaksTopic: (key: String, value: FinnesVedtakKafkaDTO) -> Boolean =
+        { _, kafkaDTO -> kafkaDTO.req.sjekkKelvin }
     builder.consume(Topics.sisteVedtak)
         .filterNotNull("filterTombstone")
         .filter { _, kafkaDTO -> kafkaDTO.res == null }
-        .map { personident, kafkaDTO ->
-                val res  = if (kafkaDTO.req.sjekkArena){
-                    val respons = runBlocking { arenaRestClient.hentSisteVedtak(personident) }
-                    kafkaDTO.copy(res = Response(null, true))
+        .split()
+        .branch(skalJoineMedVedtaksTopic, Branched.withConsumer { chain ->
+            chain.leftJoin(Topics.sisteVedtak with Topics.vedtak, vedtaksTable)
+                .map { personident, (sisteVedtakKafkaDTO, vedtakKafkaDTO) ->
+                    val finnesIArena = when (sisteVedtakKafkaDTO.req.sjekkArena) {
+                        true -> runBlocking { arenaRestClient.hentSisteVedtak(personident) } != null
+                        false -> null
+                    }
+                    val svar = sisteVedtakKafkaDTO.copy(res = Response(vedtakKafkaDTO != null, finnesIArena))
+                    KeyValue(personident, svar)
                 }
-                else kafkaDTO
-            KeyValue(personident, res)
-        }
-        .filterNot { _, kafkaDTO -> kafkaDTO.res == null }
-        .produce(Topics.sisteVedtak, "sisteVedtakMedArenaSvar")
+                .filterNot { _, kafkaDTO -> kafkaDTO.res == null }
+                .produce(Topics.sisteVedtak, "sisteVedtakFraKelvinOgArena")
+        })
+        .defaultBranch(Branched.withConsumer { chain ->
+            chain.map { personident, kafkaDTO ->
+                val res = if (kafkaDTO.req.sjekkArena) {
+                    val respons = runBlocking { arenaRestClient.hentSisteVedtak(personident) }
+                    kafkaDTO.copy(res = Response(null, respons != null))
+                } else kafkaDTO
+                KeyValue(personident, res)
+            }
+                .filterNot { _, kafkaDTO -> kafkaDTO.res == null }
+                .produce(Topics.sisteVedtak, "sisteVedtakFraArena")
+        })
         return builder.build()
 
 }
@@ -123,7 +141,7 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
             get("/vedtak") {
                 val personident = call.parameters.getOrFail("personident")
                 val arenarespons = arenaRestClient.hentSisteVedtak(personident)
-                call.respond(arenarespons)
+                call.respond(arenarespons ?: ArenaResponse(null, null))
             }
         }
     }

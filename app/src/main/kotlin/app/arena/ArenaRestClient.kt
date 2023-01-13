@@ -26,15 +26,19 @@ class ArenaRestClient(
 
     suspend fun hentSisteVedtak(
         fnr: String
-    ): ArenaResponse {
+    ): ArenaResponse? {
         val token = tokenProvider.getClientCredentialToken()
-        return httpClient.get("${arenaConfig.proxyBaseUrl}/arena/vedtak/$fnr") {
-            accept(ContentType.Application.Json)
-            // header("fnr", fnr)
-            bearerAuth(token)
-            contentType(ContentType.Application.Json)
+        return try {
+            httpClient.get("${arenaConfig.proxyBaseUrl}/arena/vedtak/$fnr") {
+                accept(ContentType.Application.Json)
+                // header("fnr", fnr)
+                bearerAuth(token)
+                contentType(ContentType.Application.Json)
+            }
+                .body()
+        } catch (exception: Exception){
+            null
         }
-            .body()
     }
 
     private val httpClient = HttpClient(CIO) {
