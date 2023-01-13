@@ -25,6 +25,8 @@ spec:
   kafka:
     pool: {{kafka-pool}}
     streams: true
+  ingresses:
+    - {{ingress}}
   liveness:
     path: /actuator/live
     initialDelay: 3

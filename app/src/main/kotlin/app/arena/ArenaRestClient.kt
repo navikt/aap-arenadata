@@ -28,13 +28,15 @@ class ArenaRestClient(
         fnr: String
     ): ArenaResponse {
         val token = tokenProvider.getClientCredentialToken()
-        return httpClient.get("${arenaConfig.proxyBaseUrl}/vedtak") {
+        return httpClient.get("${arenaConfig.proxyBaseUrl}/arena/vedtak/$fnr") {
             accept(ContentType.Application.Json)
-            header("fnr", fnr)
+            // header("fnr", fnr)
             bearerAuth(token)
             contentType(ContentType.Application.Json)
         }
-            .body()
+            .body<ArenaResponse>().also {
+                sikkerLogg.info("Svar fra Arena: $it")
+            }
     }
 
     private val httpClient = HttpClient(CIO) {
