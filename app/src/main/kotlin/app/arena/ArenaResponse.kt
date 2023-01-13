@@ -20,7 +20,7 @@ data class Ytelsesvedtak(
     val status: String,
     val unntaksvedtak: String,
     val sisteMeldekort: SisteMeldekort?,
-    val meldedato: String,
+    val meldedato: String?,
     val utbetaling: String
 )
 
