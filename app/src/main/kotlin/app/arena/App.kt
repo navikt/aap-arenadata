@@ -16,10 +16,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.aap.kafka.serde.json.JsonSerde
-import no.nav.aap.kafka.streams.KStreams
-import no.nav.aap.kafka.streams.KStreamsConfig
-import no.nav.aap.kafka.streams.KafkaStreams
-import no.nav.aap.kafka.streams.Topic
+import no.nav.aap.kafka.streams.*
 import no.nav.aap.kafka.streams.extension.*
 import no.nav.aap.ktor.client.AzureConfig
 import no.nav.aap.ktor.config.loadConfig
@@ -41,12 +38,21 @@ data class ArenaConfig(
 
 private val sikkerLogg = LoggerFactory.getLogger("secureLog")
 
+object Tables {
+    val vedtak = Table("iverksatteVedtak", Topics.vedtak)
+}
+
 object Topics {
     val sisteVedtak = Topic("aap.arena-sistevedtak.v1", JsonSerde.jackson<FinnesVedtakKafkaDTO>())
+    val vedtak = Topic("aap.vedtak.v1", JsonSerde.jackson<IverksettVedtakKafkaDto>())
 }
 
 fun topology(arenaRestClient: ArenaRestClient): Topology {
     val builder = StreamsBuilder()
+
+    builder.consume(Topics.vedtak)
+        .produce(Tables.vedtak)
+
     builder.consume(Topics.sisteVedtak)
         .filterNotNull("filterTombstone")
         .filter { _, kafkaDTO -> kafkaDTO.res == null }
@@ -91,6 +97,8 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
         topology = topology(arenaRestClient)
     )
 
+    val statestore = kafka.getStore<IverksettVedtakKafkaDto>(Tables.vedtak.stateStoreName)
+
     routing {
         route("/actuator") {
             get("/metrics") {
@@ -103,6 +111,12 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
             get("/ready") {
                 val status = if (kafka.isReady()) HttpStatusCode.OK else HttpStatusCode.InternalServerError
                 call.respond(status, "vedtak")
+            }
+        }
+        route("/kelvin") {
+            get("/vedtak") {
+                val personident = call.parameters.getOrFail("personident")
+                call.respond(statestore[personident])
             }
         }
         route("/arena") {
