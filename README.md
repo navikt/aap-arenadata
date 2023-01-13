@@ -1,2 +1,2 @@
-# aap-arenadata
-Henter vedtaksdata fra arena via proxy
+# aap-saksinfo
+App som henter saksinformasjon for brukere. Går både mot arena og kelvin, og sammenstiller dataene.

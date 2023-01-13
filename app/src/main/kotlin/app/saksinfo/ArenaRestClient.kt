@@ -1,4 +1,4 @@
-package app.arena
+package app.saksinfo
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature

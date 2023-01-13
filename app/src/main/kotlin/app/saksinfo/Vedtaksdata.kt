@@ -1,4 +1,4 @@
-package app.arena
+package app.saksinfo
 
 data class Vedtaksdata (
     val harIverksattVedtak: Boolean,
