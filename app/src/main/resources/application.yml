@@ -5,6 +5,11 @@ azure:
   tokenEndpoint: ${AZURE_OPENID_CONFIG_TOKEN_ENDPOINT}
   clientId: ${AZURE_APP_CLIENT_ID}
   clientSecret: ${AZURE_APP_CLIENT_SECRET}
+oauth:
+  azure:
+    issuer: ${AZURE_OPENID_CONFIG_ISSUER}
+    audience: ${AZURE_APP_CLIENT_ID}
+    jwksUrl: ${AZURE_OPENID_CONFIG_JWKS_URI}
 kafka:
   application-id: ${KAFKA_STREAMS_APPLICATION_ID}
   brokers: ${KAFKA_BROKERS}

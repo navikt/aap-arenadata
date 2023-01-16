@@ -1,17 +1,26 @@
 package app.saksinfo
 
+import com.auth0.jwk.JwkProviderBuilder
+import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.http.*
+import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.engine.*
 import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import io.ktor.util.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
@@ -25,12 +34,8 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Branched
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
 
-data class Config(
-    val kafka: KStreamsConfig,
-    val azure: AzureConfig,
-    val arena: ArenaConfig
-)
 
 data class ArenaConfig(
     val proxyBaseUrl: String,
@@ -84,7 +89,7 @@ fun topology(arenaRestClient: ArenaRestClient): Topology {
                 .filterNot { _, kafkaDTO -> kafkaDTO.res == null }
                 .produce(Topics.sisteVedtak, "sisteVedtakFraArena")
         })
-        return builder.build()
+    return builder.build()
 
 }
 
@@ -106,6 +111,20 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
 
     Thread.currentThread().setUncaughtExceptionHandler { _, e -> sikkerLogg.error("Uhåndtert feil", e) }
     environment.monitor.subscribe(ApplicationStopping) { kafka.close() }
+
+    val jwkProvider = JwkProviderBuilder(config.oauth.azure.jwksUrl)
+        .cached(10, 24, TimeUnit.HOURS)
+        .rateLimited(10, 1, TimeUnit.MINUTES)
+        .build()
+    authentication {
+        jwt {
+            realm = "hent saksinfo"
+            verifier(jwkProvider, config.oauth.azure.issuer)
+            validate { credential ->
+                if (credential.payload.audience.contains(config.oauth.azure.audience)) JWTPrincipal(credential.payload) else null
+            }
+        }
+    }
 
     val arenaRestClient = ArenaRestClient(config.arena, config.azure)
 
@@ -131,17 +150,19 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
                 call.respond(status, "vedtak")
             }
         }
-            get("/vedtak") {
-                val personident = call.parameters.getOrFail("personident")
-                val arenarespons = arenaRestClient.hentSisteVedtak(personident)
-                val kelvinrespons = statestore[personident]
-                if(arenarespons != null){
-                    call.respond(Vedtaksdata(true, "arena"))
+        route("/vedtak") {
+            authenticate{
+                get {
+                    val personident = call.parameters.getOrFail("personident")
+                    val arenarespons = arenaRestClient.hentSisteVedtak(personident)
+                    val kelvinrespons = statestore[personident]
+                    if (arenarespons != null) {
+                        call.respond(Vedtaksdata(true, "arena"))
+                    } else if (kelvinrespons != null) {
+                        call.respond(Vedtaksdata(true, "kelvin"))
+                    } else call.respond(Vedtaksdata(false, ""))
                 }
-                else if(kelvinrespons != null){
-                    call.respond(Vedtaksdata(true, "kelvin"))
-                }
-                else call.respond(Vedtaksdata(false, ""))
             }
+        }
     }
 }
