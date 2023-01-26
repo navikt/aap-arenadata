@@ -1,4 +1,4 @@
-package saksinfo
+package saksinfo.arena
 
 data class ArenaResponse (
     val aapSak: AapSak?,

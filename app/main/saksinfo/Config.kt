@@ -20,3 +20,8 @@ data class IssuerConfig(
     val audience: String,
     val jwksUrl: URL
 )
+
+data class ArenaConfig(
+    val proxyBaseUrl: String,
+    val scope: String
+)

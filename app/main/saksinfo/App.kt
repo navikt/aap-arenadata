@@ -11,7 +11,9 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.engine.*
 import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
@@ -27,70 +29,22 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Branched
 import org.slf4j.LoggerFactory
+import saksinfo.arena.ArenaRestClient
+import saksinfo.arena.FinnesVedtakKafkaDTO
+import saksinfo.arena.Response
+import saksinfo.kafka.IverksettVedtakKafkaDto
+import saksinfo.kafka.Tables
+import saksinfo.kafka.Topics
+import saksinfo.kafka.topology
 import java.util.concurrent.TimeUnit
 
-
-data class ArenaConfig(
-    val proxyBaseUrl: String,
-    val scope: String
-)
-
 private val sikkerLogg = LoggerFactory.getLogger("secureLog")
-
-object Tables {
-    val vedtak = Table("iverksatteVedtak", Topics.vedtak)
-}
-
-object Topics {
-    val sisteVedtak = Topic("aap.arena-sistevedtak.v1", JsonSerde.jackson<FinnesVedtakKafkaDTO>())
-    val vedtak = Topic("aap.vedtak.v1", JsonSerde.jackson<IverksettVedtakKafkaDto>())
-}
-
-fun topology(arenaRestClient: ArenaRestClient): Topology {
-    val builder = StreamsBuilder()
-
-    val vedtaksTable = builder.consume(Topics.vedtak)
-        .produce(Tables.vedtak)
-
-    val skalJoineMedVedtaksTopic: (key: String, value: FinnesVedtakKafkaDTO) -> Boolean =
-        { _, kafkaDTO -> kafkaDTO.req.sjekkKelvin }
-    builder.consume(Topics.sisteVedtak)
-        .filterNotNull("filterTombstone")
-        .filter { _, kafkaDTO -> kafkaDTO.res == null }
-        .split()
-        .branch(skalJoineMedVedtaksTopic, Branched.withConsumer { chain ->
-            chain.leftJoin(Topics.sisteVedtak with Topics.vedtak, vedtaksTable)
-                .map { personident, (sisteVedtakKafkaDTO, vedtakKafkaDTO) ->
-                    val finnesIArena = when (sisteVedtakKafkaDTO.req.sjekkArena) {
-                        true -> runBlocking { arenaRestClient.hentSisteVedtak(personident) } != null
-                        false -> null
-                    }
-                    val svar = sisteVedtakKafkaDTO.copy(res = Response(vedtakKafkaDTO != null, finnesIArena))
-                    KeyValue(personident, svar)
-                }
-                .filterNot { _, kafkaDTO -> kafkaDTO.res == null }
-                .produce(Topics.sisteVedtak, "sisteVedtakFraKelvinOgArena")
-        })
-        .defaultBranch(Branched.withConsumer { chain ->
-            chain.map { personident, kafkaDTO ->
-                val res = if (kafkaDTO.req.sjekkArena) {
-                    val respons = runBlocking { arenaRestClient.hentSisteVedtak(personident) }
-                    kafkaDTO.copy(res = Response(null, respons != null))
-                } else kafkaDTO
-                KeyValue(personident, res)
-            }
-                .filterNot { _, kafkaDTO -> kafkaDTO.res == null }
-                .produce(Topics.sisteVedtak, "sisteVedtakFraArena")
-        })
-    return builder.build()
-
-}
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::server).start(wait = true)
 }
 
-fun Application.server(kafka: KStreams = KafkaStreams) {
+private fun Application.server(kafka: KStreams = KafkaStreams) {
     val prometheus = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val config = loadConfig<Config>()
 
@@ -130,23 +84,11 @@ fun Application.server(kafka: KStreams = KafkaStreams) {
     val statestore = kafka.getStore<IverksettVedtakKafkaDto>(Tables.vedtak.stateStoreName)
 
     routing {
-        route("/actuator") {
-            get("/metrics") {
-                call.respond(prometheus.scrape())
-            }
-            get("/live") {
-                val status = if (kafka.isLive()) HttpStatusCode.OK else HttpStatusCode.InternalServerError
-                call.respond(status, "vedtak")
-            }
-            get("/ready") {
-                val status = if (kafka.isReady()) HttpStatusCode.OK else HttpStatusCode.InternalServerError
-                call.respond(status, "vedtak")
-            }
-        }
-        route("/vedtak") {
+        actuators(prometheus, kafka)
+        route("/v1/vedtak") {
             authenticate{
                 get {
-                    val personident = call.parameters.getOrFail("personident")
+                    val personident = call.request.header("X-personident") ?: throw BadRequestException("Header 'X-personident' må være satt")
                     val arenarespons = arenaRestClient.hentSisteVedtak(personident)
                     val kelvinrespons = statestore[personident]
                     if (arenarespons != null) {

@@ -1,4 +1,4 @@
-package saksinfo
+package saksinfo.arena
 
 data class FinnesVedtakKafkaDTO(
     val req: Request,

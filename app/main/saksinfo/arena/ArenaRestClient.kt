@@ -1,4 +1,4 @@
-package saksinfo
+package saksinfo.arena
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -15,6 +15,7 @@ import io.ktor.serialization.jackson.*
 import no.nav.aap.ktor.client.AzureAdTokenProvider
 import no.nav.aap.ktor.client.AzureConfig
 import org.slf4j.LoggerFactory
+import saksinfo.ArenaConfig
 
 private val sikkerLogg = LoggerFactory.getLogger("secureLog")
 
