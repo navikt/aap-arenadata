@@ -1,4 +1,4 @@
-package app.saksinfo
+package saksinfo
 
 import java.time.LocalDate
 import java.util.*

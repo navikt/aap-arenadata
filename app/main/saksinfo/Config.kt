@@ -1,4 +1,4 @@
-package app.saksinfo
+package saksinfo
 
 import no.nav.aap.kafka.streams.KStreamsConfig
 import no.nav.aap.ktor.client.AzureConfig

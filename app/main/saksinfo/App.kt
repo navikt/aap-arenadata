@@ -1,12 +1,8 @@
-package app.saksinfo
+package saksinfo
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.auth0.jwt.JWT
-import com.auth0.jwt.JWTVerifier
-import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.ktor.http.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
@@ -18,16 +14,13 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.routing.*
 import io.ktor.server.util.*
-import io.ktor.util.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.aap.kafka.serde.json.JsonSerde
 import no.nav.aap.kafka.streams.*
 import no.nav.aap.kafka.streams.extension.*
-import no.nav.aap.ktor.client.AzureConfig
 import no.nav.aap.ktor.config.loadConfig
 import org.apache.kafka.streams.KeyValue
 import org.apache.kafka.streams.StreamsBuilder

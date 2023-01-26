@@ -1,4 +1,4 @@
-package app.saksinfo
+package saksinfo
 
 data class Vedtaksdata (
     val harIverksattVedtak: Boolean,
