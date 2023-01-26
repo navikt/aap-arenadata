@@ -13,7 +13,7 @@ Alle spørsmål og henvendelser kan sendes til slack-kanal `#po-aap-dev`. For å
  | Rest     | Under arbeid | Ikke laget  |
 
 ### Rest-API
-Per i dag er det laget et enkelt REST-api for å hente ut data. Per nå så svarer dette kun på om du har et aktivt AAP-vedtak (du går på AAP).
+Per i dag er det laget et enkelt REST-api for å hente ut data. Per nå så svarer dette kun på om du har et aktivt AAP-vedtak (du går på AAP). Kallet vårt sjekker begge kilder (nytt system og Arena).
 
 #### Request
 ```
