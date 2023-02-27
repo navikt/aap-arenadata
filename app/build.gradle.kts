@@ -15,7 +15,7 @@ val ktorVersion = "2.2.3"
 dependencies {
     implementation("com.github.navikt.aap-libs:ktor-utils:$aapLibVersion")
     implementation("com.github.navikt.aap-libs:ktor-auth-azuread:$aapLibVersion")
-    implementation("com.github.navikt.aap-libs:kafka:$aapLibVersion")
+    implementation("com.github.navikt.aap-libs:kafka-2:$aapLibVersion")
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -42,7 +42,7 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("com.github.navikt.aap-libs:kafka-test:$aapLibVersion")
+    testImplementation("com.github.navikt.aap-libs:kafka-test-2:$aapLibVersion")
 }
 
 repositories {

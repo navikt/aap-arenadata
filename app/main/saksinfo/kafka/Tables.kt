@@ -1,7 +1,8 @@
 package saksinfo.kafka
 
-import no.nav.aap.kafka.streams.Table
+import no.nav.aap.kafka.streams.v2.Table
+
 
 object Tables {
-    val vedtak = Table("iverksatteVedtak", Topics.vedtak)
+    val vedtak = Table(Topics.vedtak)
 }

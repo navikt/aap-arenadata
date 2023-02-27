@@ -3,7 +3,6 @@ package saksinfo
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -16,25 +15,14 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.util.*
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import kotlinx.coroutines.runBlocking
-import no.nav.aap.kafka.serde.json.JsonSerde
-import no.nav.aap.kafka.streams.*
-import no.nav.aap.kafka.streams.extension.*
+import no.nav.aap.kafka.streams.v2.KStreams
+import no.nav.aap.kafka.streams.v2.KafkaStreams
 import no.nav.aap.ktor.config.loadConfig
-import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.Topology
-import org.apache.kafka.streams.kstream.Branched
 import org.slf4j.LoggerFactory
 import saksinfo.arena.ArenaRestClient
-import saksinfo.arena.FinnesVedtakKafkaDTO
-import saksinfo.arena.Response
-import saksinfo.kafka.IverksettVedtakKafkaDto
 import saksinfo.kafka.Tables
-import saksinfo.kafka.Topics
 import saksinfo.kafka.topology
 import java.util.concurrent.TimeUnit
 
@@ -44,7 +32,7 @@ fun main() {
     embeddedServer(Netty, port = 8080, module = Application::server).start(wait = true)
 }
 
-private fun Application.server(kafka: KStreams = KafkaStreams) {
+private fun Application.server(kafka: KStreams = KafkaStreams()) {
     val prometheus = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val config = loadConfig<Config>()
 
@@ -81,7 +69,7 @@ private fun Application.server(kafka: KStreams = KafkaStreams) {
         topology = topology(arenaRestClient)
     )
 
-    val statestore = kafka.getStore<IverksettVedtakKafkaDto>(Tables.vedtak.stateStoreName)
+    val statestore = kafka.getStore(Tables.vedtak)
 
     routing {
         actuators(prometheus, kafka)
