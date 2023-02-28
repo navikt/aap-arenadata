@@ -34,7 +34,7 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.10.2")
     implementation("ch.qos.logback:logback-classic:1.4.5")
-    implementation("io.ktor:ktor-server-auth-jvm:2.2.2")
+    implementation("io.ktor:ktor-server-auth-jvm:2.2.3")
     implementation("io.ktor:ktor-server-core-jvm:2.2.2")
     implementation("io.ktor:ktor-server-auth-jwt-jvm:2.2.2")
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.2")
