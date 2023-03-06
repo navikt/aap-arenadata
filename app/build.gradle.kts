@@ -37,7 +37,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jvm:2.2.4")
     implementation("io.ktor:ktor-server-core-jvm:2.2.2")
     implementation("io.ktor:ktor-server-auth-jwt-jvm:2.2.2")
-    runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.2")
+    runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.1")
 
     testImplementation(kotlin("test"))
