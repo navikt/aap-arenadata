@@ -9,8 +9,7 @@ import saksinfo.arena.Response
 
 fun topology(arenaRestClient: ArenaRestClient): Topology = no.nav.aap.kafka.streams.v2.topology {
 
-    val vedtaksTable = consume(Topics.vedtak)
-        .produce(Tables.vedtak)
+    val vedtaksTable = consume(Tables.vedtak)
 
     val skalJoineMedVedtaksTopic: (value: FinnesVedtakKafkaDTO) -> Boolean =
         { kafkaDTO -> kafkaDTO.req.sjekkKelvin }

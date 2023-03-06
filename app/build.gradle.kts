@@ -2,14 +2,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.8.10"
-    id("io.ktor.plugin") version "2.2.3"
+    id("io.ktor.plugin") version "2.2.4"
 }
 
 application {
     mainClass.set("saksinfo.AppKt")
 }
 
-val aapLibVersion = "3.6.8"
+val aapLibVersion = "3.6.28"
 val ktorVersion = "2.2.4"
 
 dependencies {
@@ -26,7 +26,7 @@ dependencies {
 
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation("io.ktor:ktor-client-auth:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
@@ -34,9 +34,6 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.10.2")
     implementation("ch.qos.logback:logback-classic:1.4.5")
-    implementation("io.ktor:ktor-server-auth-jvm:2.2.4")
-    implementation("io.ktor:ktor-server-core-jvm:2.2.2")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:2.2.2")
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.1")
 
