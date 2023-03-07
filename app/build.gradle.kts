@@ -9,7 +9,7 @@ application {
     mainClass.set("saksinfo.AppKt")
 }
 
-val aapLibVersion = "3.6.28"
+val aapLibVersion = "3.6.29"
 val ktorVersion = "2.2.4"
 
 dependencies {
