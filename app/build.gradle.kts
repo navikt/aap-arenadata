@@ -35,7 +35,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:1.10.2")
     implementation("ch.qos.logback:logback-classic:1.4.5")
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.1")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
