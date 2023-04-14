@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
     id("io.ktor.plugin") version "2.2.4"
 }
 
@@ -9,7 +9,7 @@ application {
     mainClass.set("saksinfo.AppKt")
 }
 
-val aapLibVersion = "3.6.33"
+val aapLibVersion = "3.7.12"
 val ktorVersion = "2.2.4"
 
 dependencies {
@@ -33,7 +33,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.10.5")
-    implementation("ch.qos.logback:logback-classic:1.4.5")
+    implementation("ch.qos.logback:logback-classic:1.4.6")
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:7.3")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
