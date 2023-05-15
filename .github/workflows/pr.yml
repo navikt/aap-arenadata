@@ -1,0 +1,7 @@
+name: pr
+on: pull_request
+
+jobs:
+  gradle:
+    uses: navikt/aap-workflows/.github/workflows/gradle-pr.yml@main
+    secrets: inherit

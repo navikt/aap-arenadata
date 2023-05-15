@@ -1,0 +1,15 @@
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  gradle:
+    uses: navikt/aap-workflows/.github/workflows/gradle-build.yml@main
+    secrets: inherit
+
+  dev:
+    needs: gradle
+    uses: navikt/aap-workflows/.github/workflows/deploy.yml@main
+    secrets: inherit
+    with:
+      cluster: dev-gcp
