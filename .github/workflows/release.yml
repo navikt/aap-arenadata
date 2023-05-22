@@ -3,13 +3,18 @@ name: release
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [ closed ]
 
 jobs:
   gradle:
+    if: github.event.pull_request.merged || github.event_name != 'pull_request'
     uses: navikt/aap-workflows/.github/workflows/gradle-build.yml@main
     secrets: inherit
 
   dev:
+    if: github.event.pull_request.merged || github.event_name != 'pull_request'
     needs: gradle
     uses: navikt/aap-workflows/.github/workflows/deploy.yml@main
     secrets: inherit
