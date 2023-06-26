@@ -80,10 +80,14 @@ private fun Application.server(kafka: Streams = KafkaStreams()) {
                     val arenarespons = arenaRestClient.hentSisteVedtak(personident)
                     val kelvinrespons = statestore[personident]
                     if (arenarespons != null) {
-                        call.respond(Vedtaksdata(true, "arena"))
+                        call.respond(Vedtaksdata(
+                            harVedtak = true,
+                            fom = arenarespons.ytelsesvedtak?.vedtaksperiode?.fom,
+                            tom = arenarespons.ytelsesvedtak?.vedtaksperiode?.tom,
+                            kilde = "arena"))
                     } else if (kelvinrespons != null) {
-                        call.respond(Vedtaksdata(true, "kelvin"))
-                    } else call.respond(Vedtaksdata(false, ""))
+                        call.respond(Vedtaksdata(harVedtak = true, kilde = "kelvin"))
+                    } else call.respond(Vedtaksdata(harVedtak = false, kilde = ""))
                 }
             }
         }

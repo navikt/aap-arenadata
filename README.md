@@ -22,9 +22,12 @@ X-personident <fødselsnummer>
 ```
 
 #### Response
+`fom` og `tom` kan være null
 ```json
 {
- "harIverksattVedtak": true,
+ "harVedtak": true,
+ "fom": "yyyy-MM-dd",
+ "tom": "yyyy-MM-dd",
  "kilde": "arena"
 }
 ```
