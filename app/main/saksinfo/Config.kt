@@ -7,7 +7,7 @@ import java.net.URL
 data class Config(
     val kafka: StreamsConfig,
     val azure: AzureConfig,
-    val arena: ArenaConfig,
+    val arenaoppslag: ArenaoppslagConfig,
     val oauth: OauthConfig
 )
 
@@ -21,7 +21,7 @@ data class IssuerConfig(
     val jwksUrl: URL
 )
 
-data class ArenaConfig(
-    val proxyBaseUrl: String,
+data class ArenaoppslagConfig(
+    val proxyBaseUrl:String,
     val scope: String
 )

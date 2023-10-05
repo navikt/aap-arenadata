@@ -21,9 +21,10 @@ import no.nav.aap.kafka.streams.v2.Streams
 import no.nav.aap.kafka.streams.v2.KafkaStreams
 import no.nav.aap.ktor.config.loadConfig
 import org.slf4j.LoggerFactory
-import saksinfo.arena.ArenaRestClient
+import saksinfo.arena.ArenaoppslagRestClient
 import saksinfo.kafka.Tables
 import saksinfo.kafka.topology
+import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
 private val sikkerLogg = LoggerFactory.getLogger("secureLog")
@@ -61,12 +62,12 @@ private fun Application.server(kafka: Streams = KafkaStreams()) {
         }
     }
 
-    val arenaRestClient = ArenaRestClient(config.arena, config.azure)
+    val arenaoppslagRestClient= ArenaoppslagRestClient(config.arenaoppslag, config.azure)
 
     kafka.connect(
         config = config.kafka,
         registry = prometheus,
-        topology = topology(arenaRestClient)
+        topology = topology(arenaoppslagRestClient)
     )
 
     val statestore = kafka.getStore(Tables.vedtak)
@@ -77,14 +78,18 @@ private fun Application.server(kafka: Streams = KafkaStreams()) {
             authenticate{
                 get {
                     val personident = call.request.header("X-personident") ?: throw BadRequestException("Header 'X-personident' må være satt")
-                    val arenarespons = arenaRestClient.hentSisteVedtak(personident)
+                    val arenarespons = arenaoppslagRestClient.hentVedtak(personident)
                     val kelvinrespons = statestore[personident]
-                    if (arenarespons != null) {
-                        call.respond(Vedtaksdata(
-                            harVedtak = true,
-                            fom = arenarespons.ytelsesvedtak?.vedtaksperiode?.fom,
-                            tom = arenarespons.ytelsesvedtak?.vedtaksperiode?.tom,
-                            kilde = "arena"))
+                    if (arenarespons.isNotEmpty()) {
+                        call.respond(arenarespons.map {vedtak ->
+                                Vedtaksdata(
+                                    harVedtak = true,
+                                    fom = vedtak.fraDato.toString(),
+                                    tom = vedtak.tilDato.toString(),
+                                    kilde = "arena"
+                                )
+                            }.toList()
+                        )
                     } else if (kelvinrespons != null) {
                         call.respond(Vedtaksdata(harVedtak = true, kilde = "kelvin"))
                     } else call.respond(Vedtaksdata(harVedtak = false, kilde = ""))

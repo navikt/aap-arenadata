@@ -3,11 +3,11 @@ package saksinfo.kafka
 import kotlinx.coroutines.runBlocking
 import no.nav.aap.kafka.streams.v2.KeyValue
 import no.nav.aap.kafka.streams.v2.Topology
-import saksinfo.arena.ArenaRestClient
+import saksinfo.arena.ArenaoppslagRestClient
 import saksinfo.arena.FinnesVedtakKafkaDTO
 import saksinfo.arena.Response
 
-fun topology(arenaRestClient: ArenaRestClient): Topology = no.nav.aap.kafka.streams.v2.topology {
+fun topology(arenaoppslagRestClient: ArenaoppslagRestClient): Topology = no.nav.aap.kafka.streams.v2.topology {
 
     val vedtaksTable = consume(Tables.vedtak)
 
@@ -19,7 +19,7 @@ fun topology(arenaRestClient: ArenaRestClient): Topology = no.nav.aap.kafka.stre
             chain.leftJoinWith(vedtaksTable)
                 .mapKeyValue { personident, sisteVedtakKafkaDTO, vedtakKafkaDTO ->
                     val finnesIArena = when (sisteVedtakKafkaDTO.req.sjekkArena) {
-                        true -> runBlocking { arenaRestClient.hentSisteVedtak(personident) } != null
+                        true -> runBlocking { arenaoppslagRestClient.hentVedtak(personident) }.isNotEmpty()
                         false -> null
                     }
                     val svar = sisteVedtakKafkaDTO.copy(res = Response(vedtakKafkaDTO != null, finnesIArena))
@@ -31,8 +31,8 @@ fun topology(arenaRestClient: ArenaRestClient): Topology = no.nav.aap.kafka.stre
         .default { chain ->
             chain.map { personident, kafkaDTO ->
                 if (kafkaDTO.req.sjekkArena) {
-                    val respons = runBlocking { arenaRestClient.hentSisteVedtak(personident) }
-                    kafkaDTO.copy(res = Response(null, respons != null))
+                    val respons = runBlocking { arenaoppslagRestClient.hentVedtak(personident) }
+                    kafkaDTO.copy(res = Response(null, respons.isNotEmpty()))
                 } else kafkaDTO
             }
                 .filter { kafkaDTO -> kafkaDTO.res != null }
