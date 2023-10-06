@@ -1,5 +1,5 @@
 kafka-pool: nav-dev
-ingress: https://aap-saksinfo.dev.intern.nav.no
+ingress: https://aap-saksinfo.intern.dev.nav.no
 
 arenaoppslag:
   proxyBaseUrl: https://arenaoppslag.dev-fss-pub.nais.io
