@@ -43,3 +43,8 @@ spec:
     path: /actuator/metrics
   secureLogs:
     enabled: true
+  env:
+    - name: ARENAOPPSLAG_PROXY_BASE_URL
+      value: {{arenaoppslag.proxyBaseUrl}}
+    - name: ARENAOPPSLAG_SCOPE
+      value: {{arenaoppslag.scope}}
